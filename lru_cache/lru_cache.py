@@ -9,7 +9,10 @@ class LRUCache:
     to every node stored in the cache.
     """
     def __init__(self, limit=10):
-        pass
+        self.order = DoublyLinkedList()
+        self.limit = limit
+        self.size = 0
+        self.storage = {}
 
     """
     Retrieves the value associated with the given key. Also
@@ -19,7 +22,21 @@ class LRUCache:
     key-value pair doesn't exist in the cache.
     """
     def get(self, key):
-        pass
+        if key in self.storage:
+            node = self.storage[key]
+            # [key, value] = node.value
+            self.order.move_to_front(node)
+            key = node.value[0]
+            value = node.value[1]
+            # del self.storage[self.order.tail.value[0]]
+            # self.order.remove_from_tail()
+            # self.order.add_to_head([key, value])
+            # self.storage[key] = self.order.head
+            
+            return value
+        else:
+            # print(self.storage[key])
+            return None
 
     """
     Adds the given key-value pair to the cache. The newly-
@@ -32,4 +49,45 @@ class LRUCache:
     the newly-specified value.
     """
     def set(self, key, value):
-        pass
+        if key in self.storage:
+            node = self.storage[key]
+            node.value = (key, value)
+            self.order.move_to_front(node)
+            return
+        if self.size == self.limit:
+            del self.storage[self.order.tail.value[0]]
+            self.order.remove_from_tail()
+            self.size -= 1
+        self.order.add_to_head((key,value))
+        self.storage[key] = self.order.head
+        self.size += 1
+
+    # def set(self, key, value):
+    #     if key in self.storage:
+    #         node = self.storage[key]
+    #         node.value = (key, value)
+    #         self.order.move_to_front(node)
+
+    #     elif self.size < self.limit:
+    #         self.size += 1
+    #         self.order.add_to_head([key, value])
+    #         self.storage[key] = self.order.head
+
+    #     else:
+    #         del self.storage[self.order.tail.value[0]]
+    #         self.order.remove_from_tail()
+    #         self.order.add_to_head([key, value])
+    #         self.storage[key] = self.order.head
+
+cache = LRUCache()
+cache.set('item1', 'a')
+cache.set('item2', 'b')
+cache.set('item3', 'c')
+
+print(cache.get('item1')) #a
+cache.set('item4', 'd')
+
+print(cache.get('item1')) # a 
+print(cache.get('item3')) # c
+print(cache.get('item4')) # d
+print(cache.get('item2')) # None       
