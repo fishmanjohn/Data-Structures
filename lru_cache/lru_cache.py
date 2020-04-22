@@ -1,4 +1,133 @@
-from doubly_linked_list import DoublyLinkedList
+class ListNode:
+    def __init__(self, value, prev=None, next=None):
+        self.value = value
+        self.prev = prev
+        self.next = next
+
+    """Wrap the given value in a ListNode and insert it
+    after this node. Note that this node could already
+    have a next node it is point to."""
+    def insert_after(self, value):
+        current_next = self.next
+        self.next = ListNode(value, self, current_next)
+        if current_next:
+            current_next.prev = self.next
+
+    """Wrap the given value in a ListNode and insert it
+    before this node. Note that this node could already
+    have a previous node it is point to."""
+    def insert_before(self, value):
+        current_prev = self.prev
+        self.prev = ListNode(value, current_prev, self)
+        if current_prev:
+            current_prev.next = self.prev
+
+    """Rearranges this ListNode's previous and next pointers
+    accordingly, effectively deleting this ListNode."""
+    def delete(self):
+        if self.prev:
+            self.prev.next = self.next
+        if self.next:
+            self.next.prev = self.prev
+
+
+"""Our doubly-linked list class. It holds references to
+the list's head and tail nodes."""
+
+class DoublyLinkedList:
+    def __init__(self, node=None):
+        self.head = node
+        self.tail = node
+        self.length = 1 if node is not None else 0
+
+    def __len__(self):
+        return self.length
+        
+
+    """Wraps the given value in a ListNode and inserts it 
+    as the new head of the list. Don't forget to handle 
+    the old head node's previous pointer accordingly."""
+    def add_to_head(self, value):
+        new_node = ListNode(value)
+        self.length += 1
+        if not self.head and not self.tail:
+            self.head = new_node
+            self.tail = new_node
+        else: 
+            new_node.next = self.head
+            self.head.prev = new_node
+            self.head = new_node    
+
+    """Removes the List's current head node, making the
+    current head's next node the new head of the List.
+    Returns the value of the removed Node."""
+    def remove_from_head(self):
+        value = self.head.value
+        self.delete(self.head)
+        return value
+
+    """Wraps the given value in a ListNode and inserts it 
+    as the new tail of the list. Don't forget to handle 
+    the old tail node's next pointer accordingly."""
+    def add_to_tail(self, value):
+        new_node = ListNode(value)
+        self.length += 1
+        if not self.head and not self.tail:
+            self.head = new_node
+            self.tail = new_node
+        else:
+            new_node.prev = self.tail
+            self.tail.next = new_node
+            self.tail = new_node    
+
+    """Removes the List's current tail node, making the 
+    current tail's previous node the new tail of the List.
+    Returns the value of the removed Node."""
+    def remove_from_tail(self):
+        value = self.tail.value
+        self.delete(self.tail)
+        return value
+
+    """Removes the input node from its current spot in the 
+    List and inserts it as the new head node of the List."""
+    def move_to_front(self, node):
+        if node is self.head:
+            return
+        self.add_to_head(node.value)
+        self.delete(node)
+
+    """Removes the input node from its current spot in the 
+    List and inserts it as the new tail node of the List."""
+    def move_to_end(self, node):
+        if node is self.tail:
+            return
+        self.add_to_tail(node.value)
+        self.delete(node)
+
+    """Removes a node from the list and handles cases where
+    the node was the head or the tail"""
+    def delete(self, node):
+        self.length -= 1
+        if self.head is self.tail:
+            self.head = None
+            self.tail = None
+        elif node is self.head:
+            self.head = node.next
+            node.delete()
+        else: 
+            node.delete()
+
+        
+    """Returns the highest value currently in the list"""
+    def get_max(self):
+        current = self.head
+        max = self.head.value
+        while(current is not None):
+            if current.value > max:
+                max = current.value
+            current = current.next
+        return max
+
 
 class LRUCache:
     """
@@ -8,12 +137,23 @@ class LRUCache:
     order, as well as a storage dict that provides fast access
     to every node stored in the cache.
     """
-    def __init__(self, limit=10):
-        self.order = DoublyLinkedList()
-        self.limit = limit
-        self.size = 0
-        self.storage = {}
+    # def __init__(self, limit=10):
+    #     self.order = DoublyLinkedList()
+    #     self.limit = limit
+    #     self.size = 0
+    #     self.storage = {}
 
+    # def __init__(self, limit=10):
+    #     self.limit = limit  # 1
+    #     # self.size = 0  # 2
+    #     self.order = DoublyLinkedList()  # 3
+    #     self.storage = {}  # 4
+
+    def __init__(self, limit=10):
+        self.limit = limit
+        self.storage = {}
+        self.ordering = DoublyLinkedList()
+        self.size = 0
     """
     Retrieves the value associated with the given key. Also
     needs to move the key-value pair to the end of the order
@@ -24,19 +164,43 @@ class LRUCache:
     def get(self, key):
         if key in self.storage:
             node = self.storage[key]
-            # [key, value] = node.value
-            self.order.move_to_front(node)
-            key = node.value[0]
-            value = node.value[1]
-            # del self.storage[self.order.tail.value[0]]
-            # self.order.remove_from_tail()
-            # self.order.add_to_head([key, value])
-            # self.storage[key] = self.order.head
-            
-            return value
+            self.ordering.move_to_end(node)
+            return node.value[1]
         else:
-            # print(self.storage[key])
             return None
+        
+        
+    # def get(self, key):
+    #     if key in self.storage:
+    #         node = self.storage[key]
+    #         # [key, value] = node.value
+    #         key = node.value[0]
+    #         value = node.value[1]
+    #         self.order.move_to_front(node)
+    #         # del self.storage[self.order.tail.value[0]]
+    #         # self.order.remove_from_tail()
+    #         # self.order.add_to_head([key, value])
+    #         # self.storage[key] = self.order.head
+    #         return value
+    #     else:
+    #         return None
+
+    # def get(self, key):
+    #     if key in self.storage:
+    #         node = self.storage[key]
+    #         # [key, value] = node.value
+    #         self.order.move_to_front(node)
+    #         key = node.value[0]
+    #         value = node.value[1]
+    #         # del self.storage[self.order.tail.value[0]]
+    #         # self.order.remove_from_tail()
+    #         # self.order.add_to_head([key, value])
+    #         # self.storage[key] = self.order.head
+            
+    #         return value
+    #     else:
+    #         # print(self.storage[key])
+    #         return None
 
     """
     Adds the given key-value pair to the cache. The newly-
@@ -52,15 +216,44 @@ class LRUCache:
         if key in self.storage:
             node = self.storage[key]
             node.value = (key, value)
-            self.order.move_to_front(node)
+            self.ordering.move_to_end(node)
             return
         if self.size == self.limit:
-            del self.storage[self.order.tail.value[0]]
-            self.order.remove_from_tail()
-            self.size -= 1
-        self.order.add_to_head((key,value))
-        self.storage[key] = self.order.head
+            #oldest_key = self.order.head.value[0]
+            del self.storage[self.ordering.head.value[0]]
+            self.ordering.remove_from_head()
+            self.size -= 1 
+        self.ordering.add_to_tail((key,value))
+        self.storage[key] = self.ordering.tail
         self.size += 1
+    # def set(self, key, value):
+    #     if key in self.storage:
+    #         node = self.storage[key]
+    #         node.value = [key, value]
+    #         self.order.move_to_front(node)
+    #     elif len(self.order) < self.limit:
+    #         # self.size += 1
+    #         self.order.add_to_head([key, value])
+    #         self.storage[key] = self.order.head
+    #     else:
+    #         del self.storage[self.order.tail.value[0]]
+    #         self.order.remove_from_tail()
+    #         self.order.add_to_head([key, value])
+    #         self.storage[key] = self.order.head
+
+    # def set(self, key, value):
+    #     if key in self.storage:
+    #         node = self.storage[key]
+    #         node.value = (key, value)
+    #         self.order.move_to_front(node)
+    #         return
+    #     if self.size == self.limit:
+    #         del self.storage[self.order.tail.value[0]]
+    #         self.order.remove_from_tail()
+    #         self.size -= 1
+    #     self.order.add_to_head((key,value))
+    #     self.storage[key] = self.order.head
+    #     self.size += 1
 
     # def set(self, key, value):
     #     if key in self.storage:
@@ -79,15 +272,15 @@ class LRUCache:
     #         self.order.add_to_head([key, value])
     #         self.storage[key] = self.order.head
 
-cache = LRUCache()
-cache.set('item1', 'a')
-cache.set('item2', 'b')
-cache.set('item3', 'c')
+# cache = LRUCache()
+# cache.set('item1', 'a')
+# cache.set('item2', 'b')
+# cache.set('item3', 'c')
 
-print(cache.get('item1')) #a
-cache.set('item4', 'd')
+# print(cache.get('item1')) #a
+# cache.set('item4', 'd')
 
-print(cache.get('item1')) # a 
-print(cache.get('item3')) # c
-print(cache.get('item4')) # d
-print(cache.get('item2')) # None       
+# print(cache.get('item1')) # a 
+# print(cache.get('item3')) # c
+# print(cache.get('item4')) # d
+# print(cache.get('item2')) # None       
