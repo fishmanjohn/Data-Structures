@@ -1,7 +1,3 @@
-"""Each ListNode holds a reference to its previous node
-as well as its next node in the List."""
-
-
 class ListNode:
     def __init__(self, value, prev=None, next=None):
         self.value = value
@@ -37,7 +33,6 @@ class ListNode:
 
 """Our doubly-linked list class. It holds references to
 the list's head and tail nodes."""
-
 
 class DoublyLinkedList:
     def __init__(self, node=None):
@@ -132,3 +127,43 @@ class DoublyLinkedList:
                 max = current.value
             current = current.next
         return max
+
+class Queue:
+    def __init__(self):
+        self.size = 0
+        # Why is our DLL a good choice to store our elements? A linked list facilitates the seriralization of data.
+        self.storage = DoublyLinkedList()
+
+    def enqueue(self, value):
+       self.storage.add_to_tail(value)
+       self.size += 1
+
+    def dequeue(self):
+        if self.size == 0:
+            return
+        self.size -= 1
+        return self.storage.remove_from_head()
+        
+
+    def len(self):
+        return self.storage.__len__()
+
+class Stack:
+    def __init__(self):
+        self.size = 0
+        # Why is our DLL a good choice to store our elements?
+        self.storage = DoublyLinkedList()
+
+    def push(self, value):
+        self.storage.add_to_head(value)
+        self.size += 1
+
+    def pop(self):
+        if self.size == 0:
+            return
+        self.size -= 1 
+        return self.storage.remove_from_head()
+
+    def len(self):
+        return self.size
+     
